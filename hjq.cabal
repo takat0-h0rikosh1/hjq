@@ -1,0 +1,65 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.31.2.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: 6a54cdf41b3fc1fce790acea6226206fc71dd8a235422106d8824d4856a8f6d7
+
+name:           hjq
+version:        0.1.0.0
+description:    Please see the README on GitHub at <https://github.com/githubuser/hjq#readme>
+homepage:       https://github.com/githubuser/hjq#readme
+bug-reports:    https://github.com/githubuser/hjq/issues
+author:         takat0-h0rikosh1
+maintainer:     example@example.com
+copyright:      2020 takat0-h0rikosh1
+license:        BSD3
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    README.md
+    ChangeLog.md
+
+source-repository head
+  type: git
+  location: https://github.com/githubuser/hjq
+
+library
+  exposed-modules:
+      Lib, Data.Hjq, Data.Hjq.Parser
+  other-modules:
+      Paths_hjq
+  hs-source-dirs:
+      src
+  build-depends:
+      base >=4.7 && <5
+      , text
+  default-language: Haskell2010
+
+executable hjq-exe
+  main-is: Main.hs
+  other-modules:
+      Paths_hjq
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , hjq
+  default-language: Haskell2010
+
+test-suite hjq-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      Paths_hjq
+  hs-source-dirs:
+      test
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N -Wall
+  build-depends:
+      base >=4.7 && <5
+    , hjq
+    , HUnit
+    , text
+  default-language: Haskell2010
