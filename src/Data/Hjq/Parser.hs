@@ -1,5 +1,5 @@
 module Data.Hjq.Parser 
-    ( JqFilter(JqNil)
+    ( JqFilter(JqField, JqIndex, JqNil)
     ) where
 
 import Data.Text as T
