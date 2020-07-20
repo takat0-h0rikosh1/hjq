@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 module Data.Hjq 
-    ( parseJqFilter
+    ( parseJqFilter, parseJqQuery
     ) where
 
 import Data.Text as T
@@ -28,6 +28,24 @@ jqFilterParser = schar '.' >> (jqFilter <|> jqIndex <|> pure JqNil)
 
     jqIndex :: Parser JqFilter
     jqIndex = JqIndex <$> (schar '[' *> decimal <* schar ']') <*> jqFilter
+
+parseJqQuery :: Text -> Either Text JqQuery
+parseJqQuery s = showParseResult $ parse (jqQueryParser <* endOfInput) s `feed` ""
+
+jqQueryParser :: Parser JqQuery
+jqQueryParser = queryArray <|> queryFilter <|> queryObject
+  where
+    queryArray :: Parser JqQuery
+    queryArray = JqQueryArray <$> (schar '[' *> jqQueryParser `sepBy` (schar ',') <* schar ']')
+
+    queryObject :: Parser JqQuery
+    queryObject  = JqQueryObject <$> (schar '{' *> (qObj `sepBy` schar ',') <* schar '}')
+
+    qObj :: Parser (Text, JqQuery)
+    qObj = (,) <$> (schar '"' *> word <* schar '"') <*> (schar ':' *> jqQueryParser)
+
+    queryFilter :: Parser JqQuery
+    queryFilter = JqQueryFilter <$> jqFilterParser
 
 showParseResult :: Show a => Result a -> Either Text a
 showParseResult (Done _ r) = Right r

@@ -10,6 +10,8 @@ main = do
   _ <- runTestTT $ TestList
     [TestLabel "Test jqFilterParse" jqFilterParseTest
     , TestLabel "Test jqFilterSpaces" jqFilterParserSpacesTest
+    , TestLabel "Test jqQueryParserTest" jqQueryParserTest
+    , TestLabel "Test jqQueryParserSpacesTest" jqQueryParserSpacesTest
     ]
   return()
 
@@ -40,3 +42,29 @@ jqFilterParserSpacesTest = TestList
   , "JqFilterParser test 5" ~:
       parseJqFilter " . fieldName [ 0 ] " ~?= Right (JqField "fieldName" (JqIndex 0 JqNil))
   ]
+
+jqQueryParserTest :: Test
+jqQueryParserTest = TestList
+  ["jqQueryParser test 1" ~:
+    parseJqQuery "[]" ~?= Right (JqQueryArray [])
+  , "jqQueryParser test2" ~:
+    parseJqQuery " [.hoge,.piyo]" ~?=
+      Right(JqQueryArray [JqQueryFilter (JqField "hoge" JqNil), JqQueryFilter (JqField "piyo" JqNil)])
+  ,"jqQueryParser test 3" ~:
+    parseJqQuery "{\"hige\":[],\"piyo\":[]}" ~?=
+      Right (JqQueryObject [("hoge", JqQueryArray []), ("piyo", JqQueryArray[])])
+  ]
+
+jqQueryParserSpacesTest :: Test
+jqQueryParserSpacesTest = TestList
+  ["jqQueryParser spaces test 1" ~:
+    parseJqQuery " [] " ~?= Right (JqQueryArray [])
+  , "jqQueryParser spaces test2" ~:
+    parseJqQuery " [ . hoge , . piyo ] " ~?=
+      Right(JqQueryArray [JqQueryFilter (JqField "hoge" JqNil), JqQueryFilter (JqField "piyo" JqNil)])
+  ,"jqQueryParser spaces test 3" ~:
+    parseJqQuery "{ \"hige\" : [] , \"piyo\" : [] }" ~?=
+      Right (JqQueryObject [("hoge", JqQueryArray []), ("piyo", JqQueryArray[])])
+  ]
+
+
