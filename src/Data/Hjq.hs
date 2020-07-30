@@ -6,6 +6,7 @@ module Data.Hjq
 
 import Data.Text as T
 import Data.Hjq.Parser
+import Data.Hjq.Query
 import Data.Attoparsec.Text
 import Control.Applicative
 
@@ -17,7 +18,7 @@ schar :: Char -> Parser Char
 schar c = skipSpace *> char c <* skipSpace
 
 jqFilterParser :: Parser JqFilter
-jqFilterParser = schar '.' >> (jqFilter <|> jqIndex <|> pure JqNil)
+jqFilterParser = schar '.' >> (jqField <|> jqIndex <|> pure JqNil)
   where
     jqFilter :: Parser JqFilter
     jqFilter

@@ -27,7 +27,7 @@ source-repository head
 
 library
   exposed-modules:
-      Lib, Data.Hjq, Data.Hjq.Parser
+      Lib, Data.Hjq, Data.Hjq.Parser, Data.Hjq.Query
   other-modules:
       Paths_hjq
   hs-source-dirs:
@@ -36,6 +36,9 @@ library
       base >=4.7 && <5
       , text
       , attoparsec
+      , vector
+      , unordered-containers
+      , lens-aeson
   default-language: Haskell2010
 
 executable hjq-exe
@@ -63,4 +66,8 @@ test-suite hjq-test
     , hjq
     , HUnit
     , text
+    , vector
+    , unordered-containers
+    , aeson
+    , lens-aeson
   default-language: Haskell2010

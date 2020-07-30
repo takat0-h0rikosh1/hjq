@@ -4,6 +4,9 @@ import Test.HUnit
 import Data.Hjq
 import Data.Hjq.Parser
 import Data.Text()
+import qualified Data.Vector as V
+import qualified Data.HashMap.Strict as H
+import Data.Aeson
 
 main :: IO ()
 main = do
@@ -51,7 +54,7 @@ jqQueryParserTest = TestList
     parseJqQuery " [.hoge,.piyo]" ~?=
       Right(JqQueryArray [JqQueryFilter (JqField "hoge" JqNil), JqQueryFilter (JqField "piyo" JqNil)])
   ,"jqQueryParser test 3" ~:
-    parseJqQuery "{\"hige\":[],\"piyo\":[]}" ~?=
+    parseJqQuery "{\"hoge\":[],\"piyo\":[]}" ~?=
       Right (JqQueryObject [("hoge", JqQueryArray []), ("piyo", JqQueryArray[])])
   ]
 
@@ -63,8 +66,24 @@ jqQueryParserSpacesTest = TestList
     parseJqQuery " [ . hoge , . piyo ] " ~?=
       Right(JqQueryArray [JqQueryFilter (JqField "hoge" JqNil), JqQueryFilter (JqField "piyo" JqNil)])
   ,"jqQueryParser spaces test 3" ~:
-    parseJqQuery "{ \"hige\" : [] , \"piyo\" : [] }" ~?=
+    parseJqQuery "{ \"hoge\" : [] , \"piyo\" : [] }" ~?=
       Right (JqQueryObject [("hoge", JqQueryArray []), ("piyo", JqQueryArray[])])
   ]
 
+testData :: Value
+testData = Object $ H.fromList
+  [ ("string-field", String "string value")
+  , ("nested-field", Object $ H.fromList
+      [ ("inner-string", String "inner value")
+      , ("inner-number", Number 100)
+      ]
+    )
+  , ("array-field", Array $ V.fromList
+      [ String "first field"
+      , String "next field"
+      , Object (H.fromList
+        [ ("object-in-array", String "string value in object-in-array") ] )
+      ]
+    )
+  ]
 
