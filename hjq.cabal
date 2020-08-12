@@ -38,6 +38,7 @@ library
       , attoparsec
       , vector
       , unordered-containers
+      , aeson
       , lens-aeson
   default-language: Haskell2010
 

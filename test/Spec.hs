@@ -7,6 +7,7 @@ import Data.Text()
 import qualified Data.Vector as V
 import qualified Data.HashMap.Strict as H
 import Data.Aeson
+import Data.Aeson.Lens
 
 main :: IO ()
 main = do
@@ -87,3 +88,19 @@ testData = Object $ H.fromList
     )
   ]
 
+applyFilterTest :: Test
+applyFilterTest = TestList
+  ["applyFilter test 1" ~: applyFilter (unsafeParseFilter ".") testData ~?= Right testData
+  , "applyFilter test 2" ~:
+    (Just $ applyFilter (unsafeParserFilter ".string-field") testData)
+    ~?= fmap Right (testData^?key "string-field")
+  , "applyFilter test 3" ~:
+    (Just $ applyFilter (unsafeParseFilter ".nested-field.inner-string") testData)
+    ~?= fmap Right (testData ^? key "nested-field" . key "inner-string")
+  , "applyFilter test 4" ~:
+    (Just $ applyFilter (unsafeParseFilter ".nested-field.inner-number") testData)
+    ~?= fmap Right (testData ^? key "nested-field" . key "inner-number")
+  , "applyFilter test 5" ~:
+    (Just $ applyFilter (unsafeParserFilter ".array-field[2].object-in-array") testData)
+    ~?= fmap Right (testData ^? key "array-field" . nth 2 . key "object-in-array")
+  ]

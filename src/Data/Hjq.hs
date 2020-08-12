@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 module Data.Hjq 
-    ( parseJqFilter, parseJqQuery
+    ( parseJqFilter, parseJqQuery, unsafeParseFilter, applyFilter
     ) where
 
 import Data.Text as T
@@ -9,6 +9,11 @@ import Data.Hjq.Parser
 import Data.Hjq.Query
 import Data.Attoparsec.Text
 import Control.Applicative
+import qualified Data.Vector as V
+import qualified Data.HashMap.Strict as H
+import Data.Aeson
+import Data.Aeson.Lens
+import Control.Monad.Either
 
 parseJqFilter :: Text -> Either Text JqFilter
 parseJqFilter s = showParseResult
@@ -48,9 +53,33 @@ jqQueryParser = queryArray <|> queryFilter <|> queryObject
     queryFilter :: Parser JqQuery
     queryFilter = JqQueryFilter <$> jqFilterParser
 
-showParseResult :: Show a => Result a -> Either Text a
+showParseResult :: Show a => Data.Attoparsec.Text.Result a -> Either Text a
 showParseResult (Done _ r) = Right r
 showParseResult r = Left . pack $ show r
 
 word :: Parser Text
 word = fmap pack $ many1 (letter <|> char '-' <|> char '_' <|> digit)
+
+unsafeParseFilter :: Text -> JqFilter
+unsafeParseFilter t = case parseJqFilter t of
+  Right f -> f
+  Left s -> error $ "PARSE FAILURE IN A TEST:" ++ unpack s
+
+applyFilter :: JqFilter -> Value -> Either T.Text Value
+applyFilter (JqField fieldName n) obj@(Object _)
+  = join $ noteNotFoundError fieldName (fmap (applyFilter n) (obj V.!? key fieldName))
+applyFilter (JqIndex index n) array@(Array _)
+  = join $ noteOutOfRangeError index (fmap (applyFilter n) (array V.!? nth index))
+applyFilter JqNil v = Right v
+applyFilter f o = Left $ "unexpected pattern:" <> tshow f <> ":" <> tshow o
+
+noteNotFoundError :: T.Text -> Maybe a -> Either T.Text a
+noteNotFoundError _ (Just x) = Right x
+noteNotFoundError s Nothing = Left $ "out of range:" <> tshow s
+
+noteOutOfRangeError :: Int -> Maybe a -> Either T.Text a
+noteOutOfRangeError _ (Just x) = Right x
+noteOutOfRangeError s Nothing = Left $ "out of range:" <> tshow s
+
+tshow :: Show a => a -> T.Text
+tshow = T.pack . show
